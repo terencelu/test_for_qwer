@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import socket
 import numpy as np
 import math
 from duckietown_msgs.msg import  Twist2DStamped, BoolStamped
@@ -32,8 +33,8 @@ class JoyMapper(object):
         self.pub_anti_instagram = rospy.Publisher("anti_instagram_node/click",BoolStamped, queue_size=1)
         self.pub_e_stop = rospy.Publisher("wheels_driver_node/emergency_stop",BoolStamped,queue_size=1)
         self.pub_avoidance = rospy.Publisher("~start_avoidance",BoolStamped,queue_size=1)
-		self.pub_hello_stop = rospy.Publisher("wheels_driver_node/hello_stop", BoolStamped,queue_size=1)
-		self.pub_goturnback = rospy.Publisher("wheels_driver_node/t_back",BoolStamped,queue_size=1)
+        self.pub_hello_stop = rospy.Publisher("wheels_driver_node/hello_stop", BoolStamped,queue_size=1)
+        self.pub_goturnback = rospy.Publisher("wheels_driver_node/t_back",BoolStamped,queue_size=1)
 		
         # Subscriptions
         self.sub_joy_ = rospy.Subscriber("joy", Joy, self.cbJoy, queue_size=1)
@@ -50,7 +51,8 @@ class JoyMapper(object):
         pub_msg.data = self.state_parallel_autonomy
         pub_msg.header.stamp = self.last_pub_time
         self.pub_parallel_autonomy.publish(pub_msg)
-        
+
+        self.socket() # socket function
 
     def cbParamTimer(self,event):
         self.v_gain = rospy.get_param("~speed_gain", 1.0)
@@ -81,11 +83,47 @@ class JoyMapper(object):
             car_cmd_msg.omega = self.joy.axes[3] * self.omega_gain
         self.pub_car_cmd.publish(car_cmd_msg)
 
+    def socket(self):
+        # socket begin
+        servo = PWM(0x40)
+	    servo.setPWMFreq(60)
+        HOST = ''  # Symbolic name meaning all available interfaces
+        PORT = 50007 # Arbitrary non-privileged port
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((HOST, PORT))
+        rospy.loginfo('goingggggggggggg to Listen')
+        s.listen(1)
+        conn, addr = s.accept()
+        rospy.loginfo('OKKKKKKKKKKKKK  I GET conn')
+        while(1):
+            data = conn.recv(1024)
+            if data == '1' :
+                rospy.loginfo('socket conn to open grip')
+                servo.setPWM(1, 0, 350) #the best value(350) to open te grip
+                time.sleep(0.3)
+            elif data == '2' :
+                rospy.loginfo('socket conn to close grip')
+                servo.setPWM(1, 0, 510) #the best value(510) to grip can
+                time.sleep(0.3)
+            elif data == '3' :
+                hello_msg = BoolStamped()
+                rospy.loginfo('[%s] Now emergency_stop' % self.node_name)
+                hello_msg.data = True
+                self.pub_hello_stop.publish(hello_msg)
+            elif data == '4' :
+                rospy.loginfo('close socket conn')
+                conn.close()
+                break
+        rospy.loginfo('exie socket')
+
 # Button List index of joy.buttons array:
 # a = 0, b=1, x=2. y=3, lb=4, rb=5, back = 6, start =7,
 # logitek = 8, left joy = 9, right joy = 10
 
     def processButtons(self, joy_msg):
+        servo = PWM(0x40)
+		servo.setPWMFreq(60)
         if (joy_msg.buttons[6] == 1): #The back button
             override_msg = BoolStamped()
             override_msg.header.stamp = self.joy.header.stamp
@@ -125,23 +163,24 @@ class JoyMapper(object):
             avoidance_msg.data = True 
             self.pub_avoidance.publish(avoidance_msg)
 		elif (joy_msg.buttons[0] == 1):
-			rospy.loginfo('close the gripper')
-			servo.setPWM(1, 0, 540)
-			time.sleep(0.3)
+            rospy.loginfo('close the gripper')
+            servo.setPWM(1, 0, 510) #the best value(510) to grip can
+            time.sleep(0.3)
 		elif (joy_msg.buttons[10] == 1):
-			hello_msg = BoolStamped()
-			rospy.loginfo('go go HelloRanger')
-			hello_msg.data = True
-			self.pub_hello_stop.publish(hello_msg)
+            hello_msg = BoolStamped()
+            rospy.loginfo('go go HelloRanger') #press the Right joy to e_stop (success stop by myself)
+            hello_msg.data = True
+            self.pub_hello_stop.publish(hello_msg)
 		elif (joy_msg.buttons[1] == 1):
-			t_back_msg = BoolStamped()
-			rospy.loginfo('go go TurnBackRanger')
-			t_back_msg.data = False
-			self.pub_goturnback.publish(t_back_msg)
+            t_back_msg = BoolStamped()
+            rospy.loginfo('go go TurnBackRanger')
+            t_back_msg.data = False
+            self.pub_goturnback.publish(t_back_msg)
 
         else:
             some_active = sum(joy_msg.buttons) > 0
-            if some_active:rospy.loginfo('open the gripper')
+            if some_active:
+                rospy.loginfo('open the gripper')
                 servo.setPWM(1, 0, 350)
                 time.sleep(0.3)			
                 rospy.loginfo('No binding for joy_msg.buttons = %s' % str(joy_msg.buttons))
@@ -150,4 +189,5 @@ class JoyMapper(object):
 if __name__ == "__main__":
     rospy.init_node("joy_mapper",anonymous=False)
     joy_mapper = JoyMapper()
+	#joy_mapper.socket()
     rospy.spin()

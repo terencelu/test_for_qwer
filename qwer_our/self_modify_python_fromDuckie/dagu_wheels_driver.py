@@ -86,8 +86,12 @@ class DaguWheelsDriver:
         del self.motorhat
 	
 	def turnback(self):
-		self.leftMotor.run(Adafruit_MotorHAT.FORWARD)
-		self.rightMotor.run(Adafruit_MotorHAT.BACKWARD)
+        for i in range (10):
+            self.leftMotor.setSpeed(200)
+            self.leftMotor.run(Adafruit_MotorHAT.FORWARD)
+            elf.rightMotor.setSpeed(200)
+            self.rightMotor.run(Adafruit_MotorHAT.BACKWARD)
+            time.sleep(0.05)
 		
 
 # Simple example to test motors

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import socket
 from duckietown_msgs.msg import WheelsCmdStamped, BoolStamped
 from dagu_car.dagu_wheels_driver import DaguWheelsDriver
 
@@ -19,6 +20,7 @@ class WheelsDriverNode(object):
         self.control_constant = 1.0
         self.sub_topic = rospy.Subscriber("~wheels_cmd", WheelsCmdStamped, self.cbWheelsCmd, queue_size=1)
         self.sub_e_stop = rospy.Subscriber("~emergency_stop", BoolStamped, self.cbEStop, queue_size=1)
+        # our Subs be writen by myself
 		self.sub_hello_stop = rospy.Subscriber("~hello_stop", BoolStamped, self.cbHello, queue_size=1)
 		self.sub_goturnback = rospy.Subscriber("~t_back", BoolStamped,self.cbTunrnback, queue_size=1)
 		
@@ -56,11 +58,11 @@ class WheelsDriverNode(object):
 		rospy.loginfo("The hello_msg is %s" % h_msg.data)
 		self.estop=not self.estop
 		if self.estop:
-            rospy.loginfo("[%s] Hello Stop Activated")
+            rospy.loginfo("[%s] Hello Stop Activated" % self.node_name)
         else:
-            rospy.loginfo("[%s] Hello Stop Released")
+            rospy.loginfo("[%s] Hello Stop Released" % self.node_name)
 	
-	def cbTunrnback(self.t_msg):
+	def cbTunrnback(self,t_msg):
 		rospy.loginfo("GO turn back")
 		self.driver.turnback()
 		rospy.loginfo("The t_back_msg allways %s" % t_msg.data)
