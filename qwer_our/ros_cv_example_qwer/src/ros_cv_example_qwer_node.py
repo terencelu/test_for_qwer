@@ -100,7 +100,7 @@ class ros_cv_example_wama(object):
         
         
         cv2.rectangle(image, (100, 100), (120, 140), (0, 255, 0), 2)
-		cv2.line(image, (150, 150), (120,140), (255, 0 , 0),4)
+	cv2.line(image, (150, 150), (120,140), (255, 0 , 0),4)
        
         image_msg_out = self.bridge.cv2_to_imgmsg(image, "bgr8")
         image_msg_out.header.stamp = image_msg.header.stamp
