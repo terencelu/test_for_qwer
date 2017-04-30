@@ -1,6 +1,3 @@
-####hello_myrrr###
+####hello_testPrint
 
-
-for(x =1;x<=5;x++){
-	print("juyuyu");
-}
+print('success')
