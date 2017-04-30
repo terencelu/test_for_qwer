@@ -5,6 +5,9 @@
 from __future__ import division
 import time
 
+# for find file
+import os
+
 # Import the PCA9685 module.
 import Adafruit_PCA9685
 
@@ -34,15 +37,23 @@ def set_servo_pulse(channel, pulse):
     pulse //= pulse_length
     pwm.set_pwm(channel, 0, pulse)
 
-# Set frequency to 60hz, good for servos.
-pwm.set_pwm_freq(60)
+def pwm_control():
+	while True:
+		# Move servo on channel O between extremes.
+		pwm.set_pwm(0, 0, servo_min)
+		time.sleep(1)
+		pwm.set_pwm(0, 0, servo_max)
+		time.sleep(1)
 
+def openfile():
+	os.system('roslaunch ~/duckietown/catkin_ws/src/duckietown_demos joystick.launch veh:=qwer')
+		
 print('Moving servo on channel 0, press Ctrl-C to quit...')
-while True:
-	# Move servo on channel O between extremes. 
-    pwm.set_pwm(1, 0, 150)
-    print('306478')
-    time.sleep(1)
-    pwm.set_pwm(1, 0, 600)
-    print('9527')
-    time.sleep(2)
+if __name__ == "__main__":
+	# Set frequency to 60hz, good for servos.
+	pwm.set_pwm_freq(60)
+	
+	Pwm_Control = pwm_control()
+	
+	launch = openfile()
+	
