@@ -11,6 +11,8 @@ import os
 # Import the PCA9685 module.
 import Adafruit_PCA9685
 
+#Gesture
+gesture = 'down'
 
 # Uncomment to enable debug output.
 #import logging
@@ -45,16 +47,22 @@ def pwm_control():
 	time.sleep(1)
 
 def openfile():
-	os.system('roslaunch ~/duckietown/catkin_ws/src/duckietown_demos joystick.launch veh:=qwer')
+	os.system('roslaunch joystick_qwer.launch veh:=qwer')
 		
 print('Moving servo on channel 0, press Ctrl-C to quit...')
 if __name__ == "__main__":
 	# Set frequency to 60hz, good for servos.
 	pwm.set_pwm_freq(60)
+	print('try to roslaunch')
 	launch = openfile()
 	
-	while True:
-		Pwm_Control = pwm_control()
+	if gesture == 'up':
+		pwm.set_pwm(1, 0, 150)
+		time.sleep(2)
+	elif gesture == 'down':
+		pwm_control()
+	
+	print('end')
 	
 	
 	
