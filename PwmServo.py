@@ -40,20 +40,20 @@ def set_servo_pulse(channel, pulse):
 def pwm_control():
 	while True:
 		# Move servo on channel O between extremes.
-		pwm.set_pwm(0, 0, servo_min)
-		time.sleep(1)
-		pwm.set_pwm(0, 0, servo_max)
-		time.sleep(1)
+		pwm.set_pwm(1, 0, servo_min)
+		time.sleep(2)
+		pwm.set_pwm(1, 0, servo_max)
+		time.sleep(2)
 
 def openfile():
-	os.system('roslaunch ~/duckietown/catkin_ws/src/duckietown_demos joystick.launch veh:=qwer')
-		
+    os.system('roslaunch duckietown_demos joystick.launch veh:=qwer')
+    print('do it')
+
 print('Moving servo on channel 0, press Ctrl-C to quit...')
 if __name__ == "__main__":
 	# Set frequency to 60hz, good for servos.
 	pwm.set_pwm_freq(60)
-	
-	Pwm_Control = pwm_control()
-	
 	launch = openfile()
+	Pwm_Control = pwm_control()
+	print('something')
 	
