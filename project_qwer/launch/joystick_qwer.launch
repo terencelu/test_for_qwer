@@ -51,4 +51,8 @@
     <include file="$(find dagu_car)/launch/wheels_driver_node.launch">
         <arg name="veh" value="$(arg veh)"/>
     </include>
+	
+	<include file="$(find project_qwer)/launch/servo_qwer.launch">
+		<arg name="veh" value="$(arg veh)"/>
+	</include>
 </launch>

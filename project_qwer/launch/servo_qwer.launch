@@ -1,3 +1,4 @@
 <launch>
+	<arg name="veh" doc="Name of vehicle. ex: qwer"/>
 	<node ns="$(arg veh)" machine="$(arg veh)" pkg="project_qwer" type="servo_qwer.py" name="servo_qwer_node" output="screen" clear_params="true" required="true"/>
  </launch>
