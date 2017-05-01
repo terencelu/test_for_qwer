@@ -1,0 +1,4 @@
+<launch>
+<node ns="qwer" machine="qwer" pkg="project_qwer" type="servo_qwer.py" 
+name="servo_qwer_node"/>
+ </launch>
