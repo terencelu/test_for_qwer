@@ -28,6 +28,10 @@ pwm = Adafruit_PCA9685.PCA9685()
 servo_min = 150  # Min pulse length out of 4096
 servo_max = 600  # Max pulse length out of 4096
 
+#The gripper widths of opening maxium and minium
+grip_min = 640	# the gripper will colse in this pulse
+grip_max = 350	# the gripper will open to max width in this pulse
+
 # Helper function to make setting a servo pulse width simpler.
 def set_servo_pulse(channel, pulse):
     pulse_length = 1000000    # 1,000,000 us per second
@@ -40,27 +44,30 @@ def set_servo_pulse(channel, pulse):
     pwm.set_pwm(channel, 0, pulse)
 
 def pwm_control():
-	# Move servo on channel O between extremes.
-	pwm.set_pwm(1, 0, servo_min)
+	# Move servo on channel 1 between extremes.
+	pwm.set_pwm(1, 0, grip_max)
 	time.sleep(1)
-	pwm.set_pwm(1, 0, servo_max)
+	pwm.set_pwm(1, 0, grip_min)
 	time.sleep(1)
 
 def openfile():
-	os.system('roslaunch joystick_qwer.launch veh:=qwer')
+	os.system('bash ~/duckietown/test.sh')
 		
 print('Moving servo on channel 0, press Ctrl-C to quit...')
 if __name__ == "__main__":
 	# Set frequency to 60hz, good for servos.
 	pwm.set_pwm_freq(60)
 	print('try to roslaunch')
-	launch = openfile()
-	
-	if gesture == 'up':
-		pwm.set_pwm(1, 0, 150)
-		time.sleep(2)
-	elif gesture == 'down':
+#	launch = openfile()
+	for x in range(0,5,1):
 		pwm_control()
+
+
+#	if gesture == 'up':
+#		pwm.set_pwm(1, 0, 150)
+#		time.sleep(2)
+#	elif gesture == 'down':
+#		pwm_control()
 	
 	print('end')
 	
