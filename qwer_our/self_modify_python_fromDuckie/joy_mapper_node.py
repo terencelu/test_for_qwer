@@ -128,11 +128,11 @@ class JoyMapper(object):
             self.pub_avoidance.publish(avoidance_msg)
 		elif (joy_msg.buttons[0] == 1):
             rospy.loginfo('close the gripper')
-            servo.setPWM(1, 0, 540)
+            servo.setPWM(1, 0, 510) #the best value(510) to grip can
             time.sleep(0.3)
 		elif (joy_msg.buttons[10] == 1):
             hello_msg = BoolStamped()
-            rospy.loginfo('go go HelloRanger')
+            rospy.loginfo('go go HelloRanger') #press the Right joy to e_stop (success stop by myself)
             hello_msg.data = True
             self.pub_hello_stop.publish(hello_msg)
 		elif (joy_msg.buttons[1] == 1):

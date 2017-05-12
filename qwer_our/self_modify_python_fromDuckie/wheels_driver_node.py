@@ -19,6 +19,7 @@ class WheelsDriverNode(object):
         self.control_constant = 1.0
         self.sub_topic = rospy.Subscriber("~wheels_cmd", WheelsCmdStamped, self.cbWheelsCmd, queue_size=1)
         self.sub_e_stop = rospy.Subscriber("~emergency_stop", BoolStamped, self.cbEStop, queue_size=1)
+        # our Subs be writen by myself
 		self.sub_hello_stop = rospy.Subscriber("~hello_stop", BoolStamped, self.cbHello, queue_size=1)
 		self.sub_goturnback = rospy.Subscriber("~t_back", BoolStamped,self.cbTunrnback, queue_size=1)
 		
