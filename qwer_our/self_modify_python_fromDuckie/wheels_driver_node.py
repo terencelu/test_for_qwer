@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import socket
 from duckietown_msgs.msg import WheelsCmdStamped, BoolStamped
 from dagu_car.dagu_wheels_driver import DaguWheelsDriver
 
@@ -57,9 +58,9 @@ class WheelsDriverNode(object):
 		rospy.loginfo("The hello_msg is %s" % h_msg.data)
 		self.estop=not self.estop
 		if self.estop:
-            rospy.loginfo("[%s] Hello Stop Activated")
+            rospy.loginfo("[%s] Hello Stop Activated" % self.node_name)
         else:
-            rospy.loginfo("[%s] Hello Stop Released")
+            rospy.loginfo("[%s] Hello Stop Released" % self.node_name)
 	
 	def cbTunrnback(self,t_msg):
 		rospy.loginfo("GO turn back")

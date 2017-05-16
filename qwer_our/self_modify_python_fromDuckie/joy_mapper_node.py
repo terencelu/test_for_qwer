@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import socket
 import numpy as np
 import math
 from duckietown_msgs.msg import  Twist2DStamped, BoolStamped
@@ -50,7 +51,8 @@ class JoyMapper(object):
         pub_msg.data = self.state_parallel_autonomy
         pub_msg.header.stamp = self.last_pub_time
         self.pub_parallel_autonomy.publish(pub_msg)
-        
+
+        self.socket() # socket function
 
     def cbParamTimer(self,event):
         self.v_gain = rospy.get_param("~speed_gain", 1.0)
@@ -80,6 +82,40 @@ class JoyMapper(object):
             # Holonomic Kinematics for Normal Driving
             car_cmd_msg.omega = self.joy.axes[3] * self.omega_gain
         self.pub_car_cmd.publish(car_cmd_msg)
+
+    def socket(self):
+        # socket begin
+        servo = PWM(0x40)
+	    servo.setPWMFreq(60)
+        HOST = ''  # Symbolic name meaning all available interfaces
+        PORT = 50007 # Arbitrary non-privileged port
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind((HOST, PORT))
+        rospy.loginfo('goingggggggggggg to Listen')
+        s.listen(1)
+        conn, addr = s.accept()
+        rospy.loginfo('OKKKKKKKKKKKKK  I GET conn')
+        while(1):
+            data = conn.recv(1024)
+            if data == '1' :
+                rospy.loginfo('socket conn to open grip')
+                servo.setPWM(1, 0, 350) #the best value(350) to open te grip
+                time.sleep(0.3)
+            elif data == '2' :
+                rospy.loginfo('socket conn to close grip')
+                servo.setPWM(1, 0, 510) #the best value(510) to grip can
+                time.sleep(0.3)
+            elif data == '3' :
+                hello_msg = BoolStamped()
+                rospy.loginfo('[%s] Now emergency_stop' % self.node_name)
+                hello_msg.data = True
+                self.pub_hello_stop.publish(hello_msg)
+            elif data == '4' :
+                rospy.loginfo('close socket conn')
+                conn.close()
+                break
+        rospy.loginfo('exie socket')
 
 # Button List index of joy.buttons array:
 # a = 0, b=1, x=2. y=3, lb=4, rb=5, back = 6, start =7,
@@ -153,4 +189,5 @@ class JoyMapper(object):
 if __name__ == "__main__":
     rospy.init_node("joy_mapper",anonymous=False)
     joy_mapper = JoyMapper()
+	#joy_mapper.socket()
     rospy.spin()
