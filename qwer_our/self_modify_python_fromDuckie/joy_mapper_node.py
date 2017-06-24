@@ -5,6 +5,7 @@ import numpy as np
 import math
 from duckietown_msgs.msg import  Twist2DStamped, BoolStamped
 from Adafruit_PWM_Servo_Driver import PWM
+from Adafruit_MotorHAT import Adafruit_MotorHAT
 from sensor_msgs.msg import Joy
 import time
 from __builtin__ import True
@@ -52,7 +53,8 @@ class JoyMapper(object):
         pub_msg.header.stamp = self.last_pub_time
         self.pub_parallel_autonomy.publish(pub_msg)
 
-        self.socket() # socket function
+        #self.socket() # socket function
+        self.socket_PhoneCtrl() # socket foe 4G course
 
     def cbParamTimer(self,event):
         self.v_gain = rospy.get_param("~speed_gain", 1.0)
@@ -117,13 +119,71 @@ class JoyMapper(object):
                 break
         rospy.loginfo('exie socket')
 
+    def socket_PhoneCtrl(self):
+        self.motorhat = Adafruit_MotorHAT(addr=0x60)
+        self.leftMotor = self.motorhat.getMotor(1)
+        self.rightMotor = self.motorhat.getMotor(2)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        rospy.loginfo("create socket succ!")
+        sock.settimeout(20)    # if 20s it's no data received. it will interrupt
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)    #addr can reuse
+
+        sock.bind(('', 50007))
+        rospy.loginfo("bind socket succ!")
+        sock.listen(3)    #maximum connect 3 clients
+        rospy.loginfo("listen success!")
+        while True:
+            rospy.loginfo("listen for client...")
+            (conn, ADDR) = sock.accept()
+            rospy.loginfo("get client")
+            rospy.loginfo(ADDR)
+            #conn.settimeout(5)
+            szBuf = conn.recv(1024)
+            rospy.loginfo("recv:" + szBuf + "The command is")
+
+            if szBuf == "1\n":
+                rospy.loginfo("forward")
+                self.leftMotor.setSpeed(100)
+                self.rightMotor.setSpeed(100)
+                leftMotor.run(Adafruit_MotorHAT.FORWARD)
+                rightMotor.run(Adafruit_MotorHAT.FORWARD)
+            elif szBuf == "2\n":
+                rospy.loginfo("backward")
+                self.leftMotor.setSpeed(100)
+                self.rightMotor.setSpeed(100)
+                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
+                rightMotor.run(Adafruit_MotorHAT.BACKWARD)
+            elif szBuf == "3\n":
+                rospy.loginfo("left")
+                self.leftMotor.setSpeed(100)
+                self.rightMotor.setSpeed(100)
+                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
+                rightMotor.run(Adafruit_MotorHAT.FORWARD)
+            elif szBuf =='4\n':
+                rospy.loginfo("right")
+                self.leftMotor.setSpeed(100)
+                self.rightMotor.setSpeed(100)
+                leftMotor.run(Adafruit_MotorHAT.FORWARD)
+                rightMotor.run(Adafruit_MotorHAT.BACKWARD)
+            elif szBuf == "5\n":
+                hello_msg = BoolStamped()
+                rospy.loginfo('[%s] Now emergency_stop' % self.node_name)
+                hello_msg.data = True
+                self.pub_hello_stop.publish(hello_msg)
+                #conn.close()
+                #break
+            elif szBuf =='6\n':
+                self.state_verbose ^= True
+                rospy.loginfo('state_verbose = %s' % self.state_verbose)
+                rospy.set_param('line_detector_node/verbose', self.state_verbose)
+
 # Button List index of joy.buttons array:
 # a = 0, b=1, x=2. y=3, lb=4, rb=5, back = 6, start =7,
 # logitek = 8, left joy = 9, right joy = 10
 
     def processButtons(self, joy_msg):
         servo = PWM(0x40)
-		servo.setPWMFreq(60)
+        servo.setPWMFreq(60)
         if (joy_msg.buttons[6] == 1): #The back button
             override_msg = BoolStamped()
             override_msg.header.stamp = self.joy.header.stamp
