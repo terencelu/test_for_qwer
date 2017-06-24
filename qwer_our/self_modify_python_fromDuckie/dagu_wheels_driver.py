@@ -89,7 +89,7 @@ class DaguWheelsDriver:
         for i in range (10):
             self.leftMotor.setSpeed(200)
             self.leftMotor.run(Adafruit_MotorHAT.FORWARD)
-            elf.rightMotor.setSpeed(200)
+            self.rightMotor.setSpeed(200)
             self.rightMotor.run(Adafruit_MotorHAT.BACKWARD)
             time.sleep(0.05)
 		
