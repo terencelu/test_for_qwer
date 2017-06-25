@@ -125,7 +125,7 @@ class JoyMapper(object):
         self.rightMotor = self.motorhat.getMotor(2)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         rospy.loginfo("create socket succ!")
-        sock.settimeout(20)    # if 20s it's no data received. it will interrupt
+        sock.settimeout(60)    # if 20s it's no data received. it will interrupt
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)    #addr can reuse
 
         sock.bind(('', 50007))
@@ -137,45 +137,50 @@ class JoyMapper(object):
             (conn, ADDR) = sock.accept()
             rospy.loginfo("get client")
             rospy.loginfo(ADDR)
-            #conn.settimeout(5)
             szBuf = conn.recv(1024)
-            rospy.loginfo("recv:" + szBuf + "The command is")
+            #rospy.loginfo("recv:" + szBuf)
 
             if szBuf == "1\n":
                 rospy.loginfo("forward")
-                self.leftMotor.setSpeed(100)
-                self.rightMotor.setSpeed(100)
-                leftMotor.run(Adafruit_MotorHAT.FORWARD)
-                rightMotor.run(Adafruit_MotorHAT.FORWARD)
+                self.leftMotor.setSpeed(120)
+                self.rightMotor.setSpeed(120)
+                self.leftMotor.run(Adafruit_MotorHAT.FORWARD)
+                self.rightMotor.run(Adafruit_MotorHAT.FORWARD)
             elif szBuf == "2\n":
                 rospy.loginfo("backward")
-                self.leftMotor.setSpeed(100)
-                self.rightMotor.setSpeed(100)
-                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
-                rightMotor.run(Adafruit_MotorHAT.BACKWARD)
+                self.leftMotor.setSpeed(120)
+                self.rightMotor.setSpeed(120)
+                self.leftMotor.run(Adafruit_MotorHAT.BACKWARD)
+                self.rightMotor.run(Adafruit_MotorHAT.BACKWARD)
             elif szBuf == "3\n":
                 rospy.loginfo("left")
-                self.leftMotor.setSpeed(100)
-                self.rightMotor.setSpeed(100)
-                leftMotor.run(Adafruit_MotorHAT.BACKWARD)
-                rightMotor.run(Adafruit_MotorHAT.FORWARD)
+                self.leftMotor.setSpeed(120)
+                self.rightMotor.setSpeed(120)
+                self.leftMotor.run(Adafruit_MotorHAT.BACKWARD)
+                self.rightMotor.run(Adafruit_MotorHAT.FORWARD)
             elif szBuf =='4\n':
                 rospy.loginfo("right")
-                self.leftMotor.setSpeed(100)
-                self.rightMotor.setSpeed(100)
-                leftMotor.run(Adafruit_MotorHAT.FORWARD)
-                rightMotor.run(Adafruit_MotorHAT.BACKWARD)
+                self.leftMotor.setSpeed(120)
+                self.rightMotor.setSpeed(120)
+                self.leftMotor.run(Adafruit_MotorHAT.FORWARD)
+                self.rightMotor.run(Adafruit_MotorHAT.BACKWARD)
             elif szBuf == "5\n":
-                hello_msg = BoolStamped()
-                rospy.loginfo('[%s] Now emergency_stop' % self.node_name)
-                hello_msg.data = True
-                self.pub_hello_stop.publish(hello_msg)
-                #conn.close()
-                #break
+                rospy.loginfo('stop!!!')
+                e_stop_msg = BoolStamped()
+                e_stop_msg.data = True 
+                self.pub_e_stop.publish(e_stop_msg)
             elif szBuf =='6\n':
                 self.state_verbose ^= True
                 rospy.loginfo('state_verbose = %s' % self.state_verbose)
                 rospy.set_param('line_detector_node/verbose', self.state_verbose)
+            elif szBuf =='7\n':
+                override_msg = BoolStamped()
+                override_msg.data = False
+                self.pub_joy_override.publish(override_msg)
+            elif szBuf =='8\n':
+                override_msg = BoolStamped()
+                override_msg.data = True
+                self.pub_joy_override.publish(override_msg)
 
 # Button List index of joy.buttons array:
 # a = 0, b=1, x=2. y=3, lb=4, rb=5, back = 6, start =7,
